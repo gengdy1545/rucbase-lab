@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.7.5.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,8 +31,12 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_RUCBASE_LAB_SRC_PARSER_YACC_TAB_H_INCLUDED
-# define YY_YY_RUCBASE_LAB_SRC_PARSER_YACC_TAB_H_INCLUDED
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
+#ifndef YY_YY_YACC_TAB_H_INCLUDED
+# define YY_YY_YACC_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -40,51 +45,55 @@
 extern int yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    SHOW = 258,
-    TABLES = 259,
-    CREATE = 260,
-    TABLE = 261,
-    DROP = 262,
-    DESC = 263,
-    INSERT = 264,
-    INTO = 265,
-    VALUES = 266,
-    DELETE = 267,
-    FROM = 268,
-    ASC = 269,
-    ORDER = 270,
-    BY = 271,
-    WHERE = 272,
-    UPDATE = 273,
-    SET = 274,
-    SELECT = 275,
-    INT = 276,
-    CHAR = 277,
-    FLOAT = 278,
-    INDEX = 279,
-    AND = 280,
-    JOIN = 281,
-    EXIT = 282,
-    HELP = 283,
-    TXN_BEGIN = 284,
-    TXN_COMMIT = 285,
-    TXN_ABORT = 286,
-    TXN_ROLLBACK = 287,
-    ORDER_BY = 288,
-    LEQ = 289,
-    NEQ = 290,
-    GEQ = 291,
-    T_EOF = 292,
-    IDENTIFIER = 293,
-    VALUE_STRING = 294,
-    VALUE_INT = 295,
-    VALUE_FLOAT = 296
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    SHOW = 258,                    /* SHOW  */
+    TABLES = 259,                  /* TABLES  */
+    CREATE = 260,                  /* CREATE  */
+    TABLE = 261,                   /* TABLE  */
+    DROP = 262,                    /* DROP  */
+    DESC = 263,                    /* DESC  */
+    INSERT = 264,                  /* INSERT  */
+    INTO = 265,                    /* INTO  */
+    VALUES = 266,                  /* VALUES  */
+    DELETE = 267,                  /* DELETE  */
+    FROM = 268,                    /* FROM  */
+    ASC = 269,                     /* ASC  */
+    LIMIT = 270,                   /* LIMIT  */
+    ORDER = 271,                   /* ORDER  */
+    WHERE = 272,                   /* WHERE  */
+    UPDATE = 273,                  /* UPDATE  */
+    SET = 274,                     /* SET  */
+    SELECT = 275,                  /* SELECT  */
+    INT = 276,                     /* INT  */
+    CHAR = 277,                    /* CHAR  */
+    FLOAT = 278,                   /* FLOAT  */
+    INDEX = 279,                   /* INDEX  */
+    AND = 280,                     /* AND  */
+    JOIN = 281,                    /* JOIN  */
+    EXIT = 282,                    /* EXIT  */
+    HELP = 283,                    /* HELP  */
+    TXN_BEGIN = 284,               /* TXN_BEGIN  */
+    TXN_COMMIT = 285,              /* TXN_COMMIT  */
+    TXN_ABORT = 286,               /* TXN_ABORT  */
+    TXN_ROLLBACK = 287,            /* TXN_ROLLBACK  */
+    LEQ = 288,                     /* LEQ  */
+    NEQ = 289,                     /* NEQ  */
+    GEQ = 290,                     /* GEQ  */
+    T_EOF = 291,                   /* T_EOF  */
+    IDENTIFIER = 292,              /* IDENTIFIER  */
+    VALUE_STRING = 293,            /* VALUE_STRING  */
+    VALUE_INT = 294,               /* VALUE_INT  */
+    VALUE_FLOAT = 295              /* VALUE_FLOAT  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
@@ -107,4 +116,4 @@ struct YYLTYPE
 
 int yyparse (void);
 
-#endif /* !YY_YY_RUCBASE_LAB_SRC_PARSER_YACC_TAB_H_INCLUDED  */
+#endif /* !YY_YY_YACC_TAB_H_INCLUDED  */

@@ -1,13 +1,3 @@
-/* Copyright (c) 2023 Renmin University of China
-RMDB is licensed under Mulan PSL v2.
-You can use this software according to the terms and conditions of the Mulan PSL v2.
-You may obtain a copy of Mulan PSL v2 at:
-        http://license.coscl.org.cn/MulanPSL2
-THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
-EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
-MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
-See the Mulan PSL v2 for more details. */
-
 #pragma once
 #include "execution_defs.h"
 #include "execution_manager.h"
@@ -17,11 +7,11 @@ See the Mulan PSL v2 for more details. */
 
 class InsertExecutor : public AbstractExecutor {
    private:
-    TabMeta tab_;                   // 表的元数据
-    std::vector<Value> values_;     // 需要插入的数据
-    RmFileHandle *fh_;              // 表的数据文件句柄
-    std::string tab_name_;          // 表名称
-    Rid rid_;                       // 插入的位置，由于系统默认插入时不指定位置，因此当前rid_在插入后才赋值
+    TabMeta tab_;
+    std::vector<Value> values_;
+    RmFileHandle *fh_;
+    std::string tab_name_;
+    Rid rid_;
     SmManager *sm_manager_;
 
    public:
@@ -33,14 +23,23 @@ class InsertExecutor : public AbstractExecutor {
         if (values.size() != tab_.cols.size()) {
             throw InvalidValueCountError();
         }
+        // Get record file handle
         fh_ = sm_manager_->fhs_.at(tab_name).get();
         context_ = context;
     };
 
     std::unique_ptr<RmRecord> Next() override {
+        // lab3 task3 Todo
         // Make record buffer
-        RmRecord rec(fh_->get_file_hdr().record_size);
-        for (size_t i = 0; i < values_.size(); i++) {
+        // Insert into record file
+        // Insert into index
+        // lab3 task3 Todo end
+
+        // Make record buffer
+        RmRecord rec(fh_->get_file_hdr().record_size); 
+
+        // Insert into record file
+        for (size_t i = 0; i < values_.size(); ++i) {
             auto &col = tab_.cols[i];
             auto &val = values_[i];
             if (col.type != val.type) {
@@ -49,20 +48,19 @@ class InsertExecutor : public AbstractExecutor {
             val.init_raw(col.len);
             memcpy(rec.data + col.offset, val.raw->data, col.len);
         }
-        // Insert into record file
         rid_ = fh_->insert_record(rec.data, context_);
-        
+
+        // // add into write_set
+        // auto write_record = new WriteRecord(WType::INSERT_TUPLE, tab_name_, rid_);
+        // context_->txn_->AppendWriteRecord(write_record);
+
         // Insert into index
-        for(size_t i = 0; i < tab_.indexes.size(); ++i) {
-            auto& index = tab_.indexes[i];
-            auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, index.cols)).get();
-            char* key = new char[index.col_tot_len];
-            int offset = 0;
-            for(size_t i = 0; i < index.col_num; ++i) {
-                memcpy(key + offset, rec.data + index.cols[i].offset, index.cols[i].len);
-                offset += index.cols[i].len;
+        for (size_t i = 0; i < tab_.cols.size(); i++) {
+            auto &col = tab_.cols[i];
+            if (col.index) {
+	            auto ih = sm_manager_->ihs_.at(sm_manager_->get_ix_manager()->get_index_name(tab_name_, i)).get();
+	            ih->insert_entry(rec.data + col.offset, rid_, context_->txn_);
             }
-            ih->insert_entry(key, rid_, context_->txn_);
         }
         return nullptr;
     }

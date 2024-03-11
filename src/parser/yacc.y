@@ -21,8 +21,8 @@ using namespace ast;
 %define parse.error verbose
 
 // keywords
-%token SHOW TABLES CREATE TABLE DROP DESC INSERT INTO VALUES DELETE FROM ASC ORDER BY
-WHERE UPDATE SET SELECT INT CHAR FLOAT INDEX AND JOIN EXIT HELP TXN_BEGIN TXN_COMMIT TXN_ABORT TXN_ROLLBACK ORDER_BY
+%token SHOW TABLES CREATE TABLE DROP DESC INSERT INTO VALUES DELETE FROM ASC LIMIT ORDER
+WHERE UPDATE SET SELECT INT CHAR FLOAT INDEX AND JOIN EXIT HELP TXN_BEGIN TXN_COMMIT TXN_ABORT TXN_ROLLBACK
 // non-keywords
 %token LEQ NEQ GEQ T_EOF
 
@@ -40,17 +40,18 @@ WHERE UPDATE SET SELECT INT CHAR FLOAT INDEX AND JOIN EXIT HELP TXN_BEGIN TXN_CO
 %type <sv_expr> expr
 %type <sv_val> value
 %type <sv_vals> valueList
-%type <sv_str> tbName colName
-%type <sv_strs> tableList colNameList
+%type <sv_str> tbName colName orderType
+%type <sv_strs> tableList
 %type <sv_col> col
 %type <sv_cols> colList selector
 %type <sv_set_clause> setClause
 %type <sv_set_clauses> setClauses
 %type <sv_cond> condition
 %type <sv_conds> whereClause optWhereClause
-%type <sv_orderby>  order_clause opt_order_clause
-%type <sv_orderby_dir> opt_asc_desc
-
+%type <sv_orderby> orderby
+%type <sv_orderbys> orderbys 
+%type <sv_order> orderClause
+%type <sv_int> limitClause
 %%
 start:
         stmt ';'
@@ -121,11 +122,11 @@ ddl:
     {
         $$ = std::make_shared<DescTable>($2);
     }
-    |   CREATE INDEX tbName '(' colNameList ')'
+    |   CREATE INDEX tbName '(' colName ')'
     {
         $$ = std::make_shared<CreateIndex>($3, $5);
     }
-    |   DROP INDEX tbName '(' colNameList ')'
+    |   DROP INDEX tbName '(' colName ')'
     {
         $$ = std::make_shared<DropIndex>($3, $5);
     }
@@ -144,9 +145,63 @@ dml:
     {
         $$ = std::make_shared<UpdateStmt>($2, $4, $5);
     }
-    |   SELECT selector FROM tableList optWhereClause opt_order_clause
+    |   SELECT selector FROM tableList optWhereClause orderClause
     {
         $$ = std::make_shared<SelectStmt>($2, $4, $5, $6);
+    }
+    ;
+
+orderType:
+        /* epsilon */ 
+    {
+        $$ = "ASC";
+    }
+    |   ASC
+    {
+        $$ = "ASC";
+    }
+    |   DESC
+    {
+        $$ = "DESC";
+    }
+    ;
+
+limitClause:
+    {
+        $$ = -1;
+    }
+    |   LIMIT VALUE_INT
+    {
+        $$ = $2;
+    }
+    ;
+
+orderby:
+    colName orderType
+    {
+        $$ = std::make_shared<OrderByExpr>($1, $2);
+    }
+    ;
+
+orderbys:
+        orderby
+    {
+        $$ = std::vector<std::shared_ptr<OrderByExpr>>{$1};
+    }
+    | orderbys ',' orderby
+    {
+        $$.push_back($3);
+    }
+    ;
+
+orderClause:
+        /* epsilon */
+    {
+        $$ = std::make_shared<OrderExpr>(std::vector<std::shared_ptr<OrderByExpr>>{}, -1);
+    }  
+    | ORDER orderbys limitClause
+    {
+        $$ = std::make_shared<OrderExpr>($2, $3);
     }
     ;
 
@@ -156,17 +211,6 @@ fieldList:
         $$ = std::vector<std::shared_ptr<Field>>{$1};
     }
     |   fieldList ',' field
-    {
-        $$.push_back($3);
-    }
-    ;
-
-colNameList:
-        colName
-    {
-        $$ = std::vector<std::string>{$1};
-    }
-    | colNameList ',' colName
     {
         $$.push_back($3);
     }
@@ -236,7 +280,7 @@ optWhereClause:
     ;
 
 whereClause:
-        condition 
+        condition
     {
         $$ = std::vector<std::shared_ptr<BinaryExpr>>{$1};
     }
@@ -346,27 +390,6 @@ tableList:
         $$.push_back($3);
     }
     ;
-
-opt_order_clause:
-    ORDER BY order_clause      
-    { 
-        $$ = $3; 
-    }
-    |   /* epsilon */ { /* ignore*/ }
-    ;
-
-order_clause:
-      col  opt_asc_desc 
-    { 
-        $$ = std::make_shared<OrderBy>($1, $2);
-    }
-    ;   
-
-opt_asc_desc:
-    ASC          { $$ = OrderBy_ASC;     }
-    |  DESC      { $$ = OrderBy_DESC;    }
-    |       { $$ = OrderBy_DEFAULT; }
-    ;    
 
 tbName: IDENTIFIER;
 
